@@ -22,8 +22,27 @@ def get_catalog(path):
         try:
             # 获取文档描述信息
             doc = pq(html_content)
+            css_link = doc('link[href*="common"]')
+            css_scr=doc('script[src*="common"]')
+            for item in css_link.items():
+                href = item.attr('href')
+                href = href.replace('../common','assets')
+                item.attr('href',href)
+                # print(item)
+            # print(css_link)
+            for item in css_scr.items():
+                src = item.attr('src')
+                src = src.replace('../common', 'assets')
+                item.attr('src', src)
+                # print(item)
+            # print(css_scr)
+            # print(doc)
+
+            with open(path, 'w', encoding='utf-8') as fp:
+                fp.write(str(doc))
+
             name = doc('#firstHeading')
-            print(name)
+            # print(name)
             prev = name('span')
             if(prev):
                 fun_name += prev.text()
@@ -40,6 +59,7 @@ def get_catalog(path):
                         "path": path,
                         "desc": fun_desc
                     }
+
     return fun_setting
 
 
@@ -49,14 +69,20 @@ if __name__ == '__main__':
     current_path = os.getcwd()
     # 调用函数查找所有 .html 后缀的文件路径
     html_file_paths = find_html_files(current_path)
-    print(html_file_paths)
+    # print(html_file_paths)
 
     fun_settings = []
     # 提取信息，制作目录
+    count = 0
     for file_path in html_file_paths:
+
         fun_settings.append(get_catalog(file_path))
+
+        count += 1
+    print('-----------------------------')
+    print(count)
 
 
     #写入json文件中
-    with open('./cpp.json', 'w', encoding='utf-8') as fp:
-        json.dump(list(fun_settings), fp)
+    # with open('./cpp.json', 'w', encoding='utf-8') as fp:
+    #     json.dump(list(fun_settings), fp)
